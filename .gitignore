@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Markdown spec files
+PLANS.md
+FLOW.md
+AGENTS.md
+CODEX_BOOTSTRAP.md
+SELF_HEALING_AGENT.md
+run.md
+
+# Logs
+*.log

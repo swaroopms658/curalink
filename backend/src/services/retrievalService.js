@@ -2,7 +2,7 @@ import { searchPubMed } from "./pubmedService.js";
 import { searchOpenAlex } from "./openalexService.js";
 import { searchClinicalTrials } from "./clinicalTrialsService.js";
 import { retrievalConfig } from "../config/retrievalConfig.js";
-import { logInfo } from "../utils/logger.js";
+import { logInfo, logWarn } from "../utils/logger.js";
 
 const normalizePublication = (document, source) => ({
   id: document.id,

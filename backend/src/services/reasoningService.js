@@ -1,5 +1,5 @@
 import { hfConfig } from "../config/hfConfig.js";
-import { logInfo } from "../utils/logger.js";
+import { logInfo, logWarn } from "../utils/logger.js";
 
 const MAX_SNIPPET_LENGTH = 900;
 const MAX_PUBLICATIONS = 8;

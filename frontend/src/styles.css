@@ -191,12 +191,112 @@ code {
 
 /* --- Hero --- */
 .app-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
   margin-bottom: 40px;
   animation: fadeInUp 0.6s var(--ease-out) both;
 }
 
 .hero-copy {
-  max-width: 900px;
+  flex: 1;
+  max-width: 800px;
+}
+
+/* --- Hero Art --- */
+.hero-art {
+  position: relative;
+  flex: 0 0 450px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+.art-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  animation: orbFloat 8s ease-in-out infinite alternate;
+}
+
+.orb-1 {
+  width: 200px;
+  height: 200px;
+  background: var(--accent-teal);
+  top: 10%;
+  right: 15%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 250px;
+  height: 250px;
+  background: var(--accent-blue);
+  bottom: 5%;
+  left: 10%;
+  animation-delay: -3s;
+}
+
+.orb-3 {
+  width: 150px;
+  height: 150px;
+  background: var(--accent-indigo);
+  top: 40%;
+  left: 30%;
+  animation-delay: -6s;
+}
+
+.art-glass {
+  position: relative;
+  z-index: 10;
+  width: 320px;
+  height: 220px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transform: rotateY(-15deg) rotateX(5deg);
+  animation: glassHover 6s ease-in-out infinite alternate;
+}
+
+.glass-line {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, rgba(234, 241, 248, 0.2), rgba(234, 241, 248, 0.05));
+  width: 100%;
+}
+
+.glass-line.w-75 { width: 75%; }
+.glass-line.w-50 { width: 50%; }
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(20px, -20px) scale(1.1); }
+}
+
+@keyframes glassHover {
+  0% { transform: rotateY(-15deg) rotateX(5deg) translateY(0); }
+  100% { transform: rotateY(-12deg) rotateX(8deg) translateY(-15px); }
+}
+
+@media (max-width: 1100px) {
+  .app-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero-art {
+    display: none;
+  }
 }
 
 .eyebrow {

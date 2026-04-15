@@ -118,6 +118,17 @@ export function Home() {
             </button>
           </div>
         </div>
+        
+        <div className="hero-art">
+          <div className="art-orb orb-1"></div>
+          <div className="art-orb orb-2"></div>
+          <div className="art-orb orb-3"></div>
+          <div className="art-glass">
+            <div className="glass-line"></div>
+            <div className="glass-line w-75"></div>
+            <div className="glass-line w-50"></div>
+          </div>
+        </div>
       </section>
 
       <section className="app-grid">

@@ -49,8 +49,16 @@ Create a `.env` file in the root directory and add the following:
 PORT=4000
 MONGODB_URI=your_mongodb_uri
 HF_API_KEY=your_huggingface_key
+HF_CHAT_BASE_URL=https://router.huggingface.co/v1
 HF_TEXT_MODEL=mistralai/Mistral-7B-Instruct-v0.3
 HF_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+CORS_ORIGINS=http://localhost:5173,https://your-frontend-domain.vercel.app,https://*.vercel.app
+```
+
+For the frontend, create `frontend/.env` with:
+
+```env
+VITE_API_BASE_URL=http://localhost:4000
 ```
 
 ### Installation
@@ -68,6 +76,30 @@ npm run dev:backend
 npm run dev:frontend
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## Deployment
+
+### Backend on Render
+- Use the included `render.yaml` blueprint or create a Node Web Service manually.
+- Build command: `npm install`
+- Start command: `npm start`
+- Health check path: `/health`
+- Required secrets: `MONGODB_URI`, `HF_API_KEY`
+- Required env: `CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://*.vercel.app`
+
+### Frontend on Vercel
+- Deploy from the repository root
+- Framework preset: `Vite`
+- Build command: `npm run build:frontend`
+- Output directory: `frontend/dist`
+- Environment variable: `VITE_API_BASE_URL=https://your-render-service.onrender.com`
+- `vercel.json` is included so SPA routes resolve to `index.html`
+
+### Deployment Order
+1. Deploy the backend to Render first and confirm `https://your-render-service.onrender.com/health` returns `{"status":"ok"}`.
+2. Add the Vercel frontend domain to the Render `CORS_ORIGINS` value.
+3. Deploy the frontend to Vercel with `VITE_API_BASE_URL` pointing at the Render backend.
+4. Run a live query in production and confirm `/api/query` succeeds end-to-end.
 
 ---
 

@@ -17,7 +17,48 @@ const __dirname = path.dirname(__filename);
 const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
 const hasFrontendBuild = existsSync(frontendDistPath);
 
-app.use(cors());
+const normalizeOriginPattern = (value) => value.trim().replace(/\*/g, ".*");
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const compileOriginMatcher = (value) => {
+  if (!value.includes("*")) {
+    return {
+      type: "exact",
+      value
+    };
+  }
+
+  return {
+    type: "pattern",
+    value: new RegExp(`^${normalizeOriginPattern(escapeRegExp(value))}$`)
+  };
+};
+
+const allowedOriginMatchers = (process.env.CORS_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .map(compileOriginMatcher);
+
+const isAllowedOrigin = (origin) => allowedOriginMatchers.some((matcher) => {
+  if (matcher.type === "exact") {
+    return matcher.value === origin;
+  }
+
+  return matcher.value.test(origin);
+});
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  }
+}));
 app.use(express.json());
 
 app.get("/health", (_req, res) => {

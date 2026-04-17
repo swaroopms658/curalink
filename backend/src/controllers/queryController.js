@@ -13,8 +13,8 @@ import { logError, logInfo } from "../utils/logger.js";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 2; // 2 hours
 
-const buildCacheKey = (disease, query) => {
-  const normalized = `${disease.trim().toLowerCase()}::${query.trim().toLowerCase()}`;
+const buildCacheKey = (disease, query, location) => {
+  const normalized = `${disease.trim().toLowerCase()}::${query.trim().toLowerCase()}::${(location || "").trim().toLowerCase()}`;
   return createHash("sha256").update(normalized).digest("hex");
 };
 
@@ -58,7 +58,7 @@ const writeCache = async (cacheKey, response) => {
 
 export const handleQuery = async (req, res, next) => {
   try {
-    const { disease, query, sessionId } = req.body;
+    const { disease, query, sessionId, location } = req.body;
 
     if (!disease || !query || !sessionId) {
       return res.status(400).json({
@@ -69,11 +69,12 @@ export const handleQuery = async (req, res, next) => {
     logInfo("query", "received request", {
       disease,
       query,
-      sessionId
+      sessionId,
+      location: location || ""
     });
 
     // Check cache
-    const cacheKey = buildCacheKey(disease, query);
+    const cacheKey = buildCacheKey(disease, query, location);
     const cachedResponse = await readCache(cacheKey);
 
     if (cachedResponse) {
@@ -101,6 +102,7 @@ export const handleQuery = async (req, res, next) => {
     const retrievalResult = await retrieveResearch({
       disease,
       query,
+      location: location || "",
       retrievalVariants,
       sessionContext
     });
@@ -165,6 +167,7 @@ export const handleQuery = async (req, res, next) => {
     await storeSessionContext({
       sessionId,
       disease,
+      location: location || "",
       query,
       expandedQuery,
       selectedSources: validatedResponse.sources

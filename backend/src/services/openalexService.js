@@ -28,9 +28,14 @@ const normalizeWork = (work) => ({
   sourceId: work.id,
   title: work.display_name || "",
   abstract: invertAbstract(work.abstract_inverted_index),
+  authors: (work.authorships || [])
+    .map((a) => a?.author?.display_name)
+    .filter(Boolean)
+    .slice(0, 10),
   year: work.publication_year,
   url: work.primary_location?.landing_page_url || work.id,
   doi: work.doi || null,
+  platform: "OpenAlex",
   credibility: work.primary_location?.source?.is_core ? 0.82 : 0.72,
   keywords: normalizeConcepts(work.concepts)
 });

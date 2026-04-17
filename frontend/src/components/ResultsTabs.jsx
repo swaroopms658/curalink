@@ -84,7 +84,7 @@ export function ResultsTabs({ result, isLoading }) {
           <PublicationsList insights={result.insights} sources={result.sources} />
         ) : null}
 
-        {activeTab === "trials" ? <TrialsList trials={result.trials} /> : null}
+        {activeTab === "trials" ? <TrialsList trials={result.trials} sources={result.sources} /> : null}
 
         {activeTab === "sources" ? (
           <div className="stack">

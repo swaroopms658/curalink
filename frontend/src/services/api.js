@@ -31,7 +31,7 @@ const handleApiError = async (response) => {
   throw new Error(message);
 };
 
-export const queryResearch = async ({ disease, query, sessionId }) => {
+export const queryResearch = async ({ disease, query, sessionId, location }) => {
   const response = await fetch(buildApiUrl("/api/query"), {
     method: "POST",
     headers: {
@@ -40,7 +40,8 @@ export const queryResearch = async ({ disease, query, sessionId }) => {
     body: JSON.stringify({
       disease,
       query,
-      sessionId
+      sessionId,
+      location: location || ""
     })
   });
 

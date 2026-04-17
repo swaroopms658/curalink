@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea.jsx";
 export function QueryForm({
   disease,
   query,
+  location,
   onDiseaseChange,
   onQueryChange,
+  onLocationChange,
   onSubmit,
   isLoading
 }) {
@@ -42,6 +44,16 @@ export function QueryForm({
               placeholder="e.g. What do recent trials and reviews say about GLP-1 receptor agonists and cardiovascular outcomes?"
               rows={5}
               required
+            />
+          </label>
+
+          <label className="field">
+            <span className="field-label">Location <span className="field-optional">(optional)</span></span>
+            <Input
+              id="location-input"
+              value={location}
+              onChange={(event) => onLocationChange(event.target.value)}
+              placeholder="e.g. Toronto, Canada"
             />
           </label>
 

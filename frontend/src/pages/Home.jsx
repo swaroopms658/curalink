@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatInterface } from "@/components/ChatInterface.jsx";
 import { QueryForm } from "@/components/QueryForm.jsx";
@@ -33,36 +33,52 @@ export function Home() {
   const [sessionId, setSessionId] = useState("");
   const [disease, setDisease] = useState("");
   const [query, setQuery] = useState("");
-  const [result, setResult] = useState(null);
+  const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [pipelineStage, setPipelineStage] = useState(-1);
+  // Chat history: array of { role: "user" | "assistant", disease, query, location?, result?, error? }
+  const [messages, setMessages] = useState([]);
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     setSessionId(getStoredSessionId());
   }, []);
 
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
   const handleNewSession = useCallback(() => {
     const nextSessionId = createSessionId();
     window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
     setSessionId(nextSessionId);
-    setResult(null);
+    setMessages([]);
     setError("");
     setDisease("");
     setQuery("");
+    setLocation("");
     setPipelineStage(-1);
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!sessionId) {
+    if (!sessionId || !disease.trim() || !query.trim()) {
       return;
     }
 
+    const userMessage = {
+      role: "user",
+      disease: disease.trim(),
+      query: query.trim(),
+      location: location.trim()
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
     setError("");
-    setResult(null);
     setPipelineStage(0);
 
     // Simulate pipeline progress for UX feedback
@@ -79,23 +95,45 @@ export function Home() {
       const payload = await queryResearch({
         disease: disease.trim(),
         query: query.trim(),
-        sessionId
+        sessionId,
+        location: location.trim()
       });
 
       clearInterval(stageInterval);
       setPipelineStage(PIPELINE_STAGES.length);
 
+      const assistantMessage = {
+        role: "assistant",
+        disease: disease.trim(),
+        query: query.trim(),
+        result: payload
+      };
+
       startTransition(() => {
-        setResult(payload);
+        setMessages((prev) => [...prev, assistantMessage]);
       });
+
+      // Clear query for follow-up but keep disease + location
+      setQuery("");
     } catch (requestError) {
       clearInterval(stageInterval);
       setPipelineStage(-1);
+
+      const errorMessage = {
+        role: "assistant",
+        disease: disease.trim(),
+        query: query.trim(),
+        error: requestError.message
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
       setError(requestError.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const hasResult = messages.some((m) => m.role === "assistant" && m.result);
 
   return (
     <main className="app-shell">
@@ -131,31 +169,77 @@ export function Home() {
         </div>
       </section>
 
-      <section className="app-grid">
-        <div className="left-column">
-          <QueryForm
-            disease={disease}
-            query={query}
-            onDiseaseChange={setDisease}
-            onQueryChange={setQuery}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-          />
-          <ChatInterface
-            disease={disease}
-            query={query}
-            sessionId={sessionId}
-            isLoading={isLoading}
-            error={error}
-            pipelineStages={PIPELINE_STAGES}
-            pipelineStage={pipelineStage}
-            hasResult={Boolean(result)}
-          />
-        </div>
+      {/* Chat Timeline */}
+      <section className="chat-timeline">
+        {messages.map((msg, idx) => {
+          if (msg.role === "user") {
+            return (
+              <div key={idx} className="chat-bubble chat-bubble-user animate-in">
+                <div className="chat-bubble-label">You</div>
+                <div className="chat-bubble-content">
+                  <strong>{msg.disease}</strong>
+                  {msg.location ? <span className="chat-location"> · {msg.location}</span> : null}
+                  <p>{msg.query}</p>
+                </div>
+              </div>
+            );
+          }
 
-        <div className="right-column">
-          <ResultsTabs result={result} isLoading={isLoading} />
-        </div>
+          if (msg.error) {
+            return (
+              <div key={idx} className="chat-bubble chat-bubble-assistant animate-in">
+                <div className="chat-bubble-label">CuraLink</div>
+                <div className="chat-bubble-content">
+                  <p className="error-text">{msg.error}</p>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={idx} className="chat-bubble chat-bubble-assistant animate-in">
+              <div className="chat-bubble-label">CuraLink</div>
+              <div className="chat-bubble-content">
+                <ResultsTabs result={msg.result} isLoading={false} />
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Thinking indicator */}
+        {isLoading ? (
+          <div className="chat-bubble chat-bubble-assistant animate-in">
+            <div className="chat-bubble-label">CuraLink</div>
+            <div className="chat-bubble-content">
+              <ChatInterface
+                disease={disease}
+                query={query}
+                sessionId={sessionId}
+                isLoading={isLoading}
+                error=""
+                pipelineStages={PIPELINE_STAGES}
+                pipelineStage={pipelineStage}
+                hasResult={false}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div ref={chatEndRef} />
+      </section>
+
+      {/* Sticky input area */}
+      <section className="chat-input-area">
+        <QueryForm
+          disease={disease}
+          query={query}
+          location={location}
+          onDiseaseChange={setDisease}
+          onQueryChange={setQuery}
+          onLocationChange={setLocation}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </section>
     </main>
   );

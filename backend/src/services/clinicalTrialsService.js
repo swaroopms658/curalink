@@ -92,7 +92,31 @@ const normalizeStudy = (study) => {
   const status = protocol.statusModule || {};
   const conditions = protocol.conditionsModule || {};
   const interventions = protocol.armsInterventionsModule || {};
+  const eligibility = protocol.eligibilityModule || {};
+  const contactsLocations = protocol.contactsLocationsModule || {};
   const nctId = identification.nctId;
+
+  // Extract study locations
+  const studyLocations = (contactsLocations.locations || []).map((loc) => ({
+    facility: loc.facility || "",
+    city: loc.city || "",
+    state: loc.state || "",
+    country: loc.country || ""
+  })).slice(0, 5);
+
+  // Extract contacts
+  const contacts = (contactsLocations.centralContacts || []).map((c) => ({
+    name: c.name || "",
+    role: c.role || "",
+    phone: c.phone || "",
+    email: c.email || ""
+  })).slice(0, 3);
+
+  // Trim eligibility to a reasonable length
+  const rawEligibility = eligibility.eligibilityCriteria || "";
+  const trimmedEligibility = rawEligibility.length > 600
+    ? rawEligibility.slice(0, 600).trim() + "..."
+    : rawEligibility;
 
   return {
     id: `trial-${nctId}`,
@@ -103,12 +127,16 @@ const normalizeStudy = (study) => {
       ? Number(String(status.startDateStruct.date).match(/\d{4}/)?.[0])
       : null,
     url: `https://clinicaltrials.gov/study/${nctId}`,
+    recruitingStatus: status.overallStatus || "Unknown",
+    eligibility: trimmedEligibility,
+    studyLocations,
+    contacts,
     credibility: 0.85,
     keywords: [...getConditionKeywords(conditions), ...getInterventionKeywords(interventions)].slice(0, 20)
   };
 };
 
-export const searchClinicalTrials = async ({ disease, query, expandedQuery, sessionContext }) => {
+export const searchClinicalTrials = async ({ disease, query, expandedQuery, sessionContext, location }) => {
   const results = [];
   const intentTerms = extractIntentTerms(query);
 
@@ -137,6 +165,10 @@ export const searchClinicalTrials = async ({ disease, query, expandedQuery, sess
 
       if (queryTerm) {
         params.set("query.term", queryTerm);
+      }
+
+      if (location) {
+        params.set("query.locn", location);
       }
 
       if (nextPageToken) {

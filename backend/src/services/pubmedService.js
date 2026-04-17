@@ -63,6 +63,22 @@ const getKeywords = (article) => {
     .filter(Boolean);
 };
 
+const getAuthors = (article) => {
+  const authorList = toArray(article?.MedlineCitation?.Article?.AuthorList?.Author);
+  return authorList
+    .map((author) => {
+      const lastName = author?.LastName || "";
+      const initials = author?.Initials || "";
+      const collectiveName = author?.CollectiveName || "";
+      if (lastName && initials) return `${lastName} ${initials}`;
+      if (lastName) return lastName;
+      if (collectiveName) return collectiveName;
+      return null;
+    })
+    .filter(Boolean)
+    .slice(0, 10);
+};
+
 const normalizePubmedArticle = (article) => {
   const citation = article?.MedlineCitation;
   const pubmedData = article?.PubmedData;
@@ -80,9 +96,11 @@ const normalizePubmedArticle = (article) => {
     sourceId: String(pmid),
     title,
     abstract,
+    authors: getAuthors(article),
     year,
     url: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
     doi,
+    platform: "PubMed",
     credibility: 0.9,
     keywords: getKeywords(article)
   };

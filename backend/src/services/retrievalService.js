@@ -10,6 +10,8 @@ const normalizePublication = (document, source) => ({
   type: "publication",
   title: document.title,
   abstract: document.abstract,
+  authors: document.authors ?? [],
+  platform: document.platform ?? source,
   year: document.year,
   url: document.url,
   credibility: document.credibility ?? 0.5,
@@ -24,6 +26,10 @@ const normalizeTrial = (trial) => ({
   abstract: trial.summary,
   year: trial.year,
   url: trial.url,
+  recruitingStatus: trial.recruitingStatus ?? "Unknown",
+  eligibility: trial.eligibility ?? "",
+  studyLocations: trial.studyLocations ?? [],
+  contacts: trial.contacts ?? [],
   credibility: trial.credibility ?? 0.7,
   keywords: trial.keywords ?? []
 });
@@ -40,7 +46,7 @@ const mergeUniqueDocuments = (documents) => {
   return [...uniqueDocuments.values()];
 };
 
-const runRetrievalPass = async ({ disease, query, expandedQuery, sessionContext }) => {
+const runRetrievalPass = async ({ disease, query, expandedQuery, sessionContext, location }) => {
   logInfo("retrieval", "starting retrieval pass", {
     disease,
     query,
@@ -49,7 +55,7 @@ const runRetrievalPass = async ({ disease, query, expandedQuery, sessionContext 
   const [pubmedResults, openAlexResults, clinicalTrialResults] = await Promise.all([
     searchPubMed({ disease, query, expandedQuery, sessionContext }),
     searchOpenAlex({ disease, query, expandedQuery, sessionContext }),
-    searchClinicalTrials({ disease, query, expandedQuery, sessionContext })
+    searchClinicalTrials({ disease, query, expandedQuery, sessionContext, location })
   ]);
 
   const documents = [
@@ -70,7 +76,7 @@ const runRetrievalPass = async ({ disease, query, expandedQuery, sessionContext 
   };
 };
 
-export const retrieveResearch = async ({ disease, query, retrievalVariants, sessionContext }) => {
+export const retrieveResearch = async ({ disease, query, location, retrievalVariants, sessionContext }) => {
   const aggregatedPasses = [];
   let documents = [];
 
@@ -79,7 +85,8 @@ export const retrieveResearch = async ({ disease, query, retrievalVariants, sess
       disease,
       query,
       expandedQuery: variant.expandedQuery,
-      sessionContext
+      sessionContext,
+      location
     });
 
     aggregatedPasses.push({

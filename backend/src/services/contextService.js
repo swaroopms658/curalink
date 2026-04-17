@@ -5,7 +5,7 @@ import { logInfo, logWarn } from "../utils/logger.js";
 const memoryStore = new Map();
 
 export const getSessionContext = async (sessionId) => {
-  const fallback = { recentQueries: [], selectedSources: [] };
+  const fallback = { recentQueries: [], selectedSources: [], location: "" };
 
   if (isDatabaseConnected()) {
     try {
@@ -15,6 +15,7 @@ export const getSessionContext = async (sessionId) => {
         logInfo("context", "loaded session from database", { sessionId });
         return {
           disease: session.disease,
+          location: session.location || "",
           recentQueries: session.recentQueries || [],
           expandedQuery: session.expandedQuery || "",
           selectedSources: session.selectedSources || []
@@ -36,12 +37,14 @@ export const getSessionContext = async (sessionId) => {
 export const storeSessionContext = async ({
   sessionId,
   disease,
+  location,
   query,
   expandedQuery,
   selectedSources
 }) => {
   const contextPayload = {
     disease,
+    location: location || "",
     recentQueries: [],
     expandedQuery,
     selectedSources
@@ -59,6 +62,7 @@ export const storeSessionContext = async ({
         {
           $set: {
             disease,
+            location: location || "",
             expandedQuery,
             selectedSources,
             recentQueries: contextPayload.recentQueries

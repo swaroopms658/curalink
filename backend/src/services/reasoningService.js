@@ -19,11 +19,20 @@ const cleanWhitespace = (text) => String(text || "").replace(/\s+/g, " ").trim()
 const buildSourceRecord = (document) => ({
   id: document.id,
   title: document.title,
+  authors: document.authors ?? [],
+  platform: document.platform ?? document.source,
+  year: document.year ?? null,
   source: document.source,
   type: document.type,
   url: document.url,
   snippet: trimText(document.bestChunk?.text || document.abstract || ""),
-  score: document.scores?.weighted ?? null
+  score: document.scores?.weighted ?? null,
+  ...(document.type === "trial" ? {
+    recruitingStatus: document.recruitingStatus ?? "Unknown",
+    eligibility: document.eligibility ?? "",
+    studyLocations: document.studyLocations ?? [],
+    contacts: document.contacts ?? []
+  } : {})
 });
 
 const formatSourceBlock = (source, index) =>

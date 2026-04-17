@@ -34,6 +34,16 @@ function getSourceBadgeTone(source) {
   }
 }
 
+function AuthorsList({ authors }) {
+  if (!authors?.length) return null;
+
+  const display = authors.length > 3
+    ? `${authors.slice(0, 3).join(", ")} et al.`
+    : authors.join(", ");
+
+  return <p className="source-authors">{display}</p>;
+}
+
 export function SourceCard({ source, index }) {
   const delayClass = `source-card animate-in animate-in-delay-${Math.min((index || 0) + 1, 8)}`;
 
@@ -41,11 +51,16 @@ export function SourceCard({ source, index }) {
     <Card className={delayClass}>
       <CardContent className="source-card-content">
         <div className="source-card-topline">
-          <Badge tone={getSourceBadgeTone(source.source)}>{source.source}</Badge>
-          <Badge tone="muted">{source.type}</Badge>
+          <div className="source-badge-group">
+            <Badge tone={getSourceBadgeTone(source.source)}>{source.platform || source.source}</Badge>
+            <Badge tone="muted">{source.type}</Badge>
+            {source.year ? <Badge tone="muted">{source.year}</Badge> : null}
+          </div>
         </div>
 
         <h3 className="source-title">{source.title}</h3>
+
+        <AuthorsList authors={source.authors} />
 
         <ScoreBar score={source.score} />
 

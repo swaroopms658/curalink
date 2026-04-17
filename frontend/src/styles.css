@@ -1054,7 +1054,6 @@ code {
   max-width: 980px;
   margin: 0 auto 24px;
   padding: 0 4px;
-  min-height: 55vh;
 }
 
 .chat-bubble {
@@ -1114,19 +1113,15 @@ code {
   background: var(--bg-elevated);
 }
 
-/* Chat input area (sticky at bottom) */
+/* Chat input area (flows at the bottom) */
 .chat-input-area {
-  position: sticky;
-  bottom: 0;
-  z-index: 50;
   max-width: 980px;
   margin: 0 auto;
-  padding: 20px 4px 0;
-  background: linear-gradient(to top, var(--bg-base) 60%, transparent);
+  padding: 20px 4px 40px;
 }
 
 .chat-input-area .card {
-  box-shadow: var(--shadow-lg), 0 -10px 30px rgba(124, 58, 237, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 /* ========================================

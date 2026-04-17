@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    CuraLink — Premium Design System
    ======================================== */
 
@@ -1054,6 +1054,7 @@ code {
   max-width: 980px;
   margin: 0 auto 24px;
   padding: 0 4px;
+  min-height: 55vh;
 }
 
 .chat-bubble {

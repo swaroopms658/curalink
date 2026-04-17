@@ -15,7 +15,14 @@ export function QueryForm({
 }) {
   return (
     <Card className="hero-card animate-in">
-      <CardContent style={{ paddingTop: "24px" }}>
+      <CardHeader>
+        <CardTitle>Ask for source-grounded medical research</CardTitle>
+        <CardDescription>
+          Deep retrieval stays intact — 150–300 results are fetched, ranked with
+          3-stage scoring, and grounded through Hugging Face reasoning.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
         <form className="query-form" onSubmit={onSubmit}>
           <label className="field">
             <span className="field-label">Disease or condition</span>
@@ -35,7 +42,7 @@ export function QueryForm({
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
               placeholder="e.g. What do recent trials say about GLP-1 and CV outcomes?"
-              rows={2}
+              rows={5}
               required
             />
           </label>

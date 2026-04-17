@@ -169,77 +169,76 @@ export function Home() {
         </div>
       </section>
 
-      {/* Chat Timeline */}
-      <section className="chat-timeline">
-        {messages.map((msg, idx) => {
-          if (msg.role === "user") {
-            return (
-              <div key={idx} className="chat-bubble chat-bubble-user animate-in">
-                <div className="chat-bubble-label">You</div>
-                <div className="chat-bubble-content">
-                  <strong>{msg.disease}</strong>
-                  {msg.location ? <span className="chat-location"> · {msg.location}</span> : null}
-                  <p>{msg.query}</p>
-                </div>
-              </div>
-            );
-          }
+      <section className="app-grid">
+        {/* Left Column: Input and Pipeline Status */}
+        <div className="left-column">
+          <QueryForm
+            disease={disease}
+            query={query}
+            location={location}
+            onDiseaseChange={setDisease}
+            onQueryChange={setQuery}
+            onLocationChange={setLocation}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+          
+          <ChatInterface
+            disease={disease}
+            query={query}
+            sessionId={sessionId}
+            isLoading={isLoading}
+            error={error}
+            pipelineStages={PIPELINE_STAGES}
+            pipelineStage={pipelineStage}
+            hasResult={hasResult}
+          />
+        </div>
 
-          if (msg.error) {
+        {/* Right Column: Chat Timeline & Results */}
+        <div className="right-column chat-timeline" style={{ padding: 0 }}>
+          {messages.length === 0 && !isLoading && (
+            <div className="empty-state">
+              Start a session by asking a research question. Your follow-up interactions will be recorded here.
+            </div>
+          )}
+          
+          {messages.map((msg, idx) => {
+            if (msg.role === "user") {
+              return (
+                <div key={idx} className="chat-bubble chat-bubble-user animate-in">
+                  <div className="chat-bubble-label">You</div>
+                  <div className="chat-bubble-content">
+                    <strong>{msg.disease}</strong>
+                    {msg.location ? <span className="chat-location"> · {msg.location}</span> : null}
+                    <p>{msg.query}</p>
+                  </div>
+                </div>
+              );
+            }
+
+            if (msg.error) {
+              return (
+                <div key={idx} className="chat-bubble chat-bubble-assistant animate-in">
+                  <div className="chat-bubble-label">CuraLink</div>
+                  <div className="chat-bubble-content">
+                    <p className="error-text">{msg.error}</p>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div key={idx} className="chat-bubble chat-bubble-assistant animate-in">
                 <div className="chat-bubble-label">CuraLink</div>
                 <div className="chat-bubble-content">
-                  <p className="error-text">{msg.error}</p>
+                  <ResultsTabs result={msg.result} isLoading={false} />
                 </div>
               </div>
             );
-          }
-
-          return (
-            <div key={idx} className="chat-bubble chat-bubble-assistant animate-in">
-              <div className="chat-bubble-label">CuraLink</div>
-              <div className="chat-bubble-content">
-                <ResultsTabs result={msg.result} isLoading={false} />
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Thinking indicator */}
-        {isLoading ? (
-          <div className="chat-bubble chat-bubble-assistant animate-in">
-            <div className="chat-bubble-label">CuraLink</div>
-            <div className="chat-bubble-content">
-              <ChatInterface
-                disease={disease}
-                query={query}
-                sessionId={sessionId}
-                isLoading={isLoading}
-                error=""
-                pipelineStages={PIPELINE_STAGES}
-                pipelineStage={pipelineStage}
-                hasResult={false}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        <div ref={chatEndRef} />
-      </section>
-
-      {/* Sticky input area */}
-      <section className="chat-input-area">
-        <QueryForm
-          disease={disease}
-          query={query}
-          location={location}
-          onDiseaseChange={setDisease}
-          onQueryChange={setQuery}
-          onLocationChange={setLocation}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+          })}
+          <div ref={chatEndRef} />
+        </div>
       </section>
     </main>
   );

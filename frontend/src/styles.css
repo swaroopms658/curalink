@@ -361,6 +361,12 @@ code {
   align-content: start;
 }
 
+.left-column {
+  position: sticky;
+  top: 24px;
+  height: max-content;
+}
+
 /* --- Card System --- */
 .card {
   position: relative;

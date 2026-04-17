@@ -182,17 +182,19 @@ const normalizeModelPayload = (payload, sourcesById) => {
         })
     : [];
 
-  // Fallback: if LLM returned 0 trials but trial sources exist, generate from source data
+  // Ensure that all trials retrieved by the clinical trials service actually show up
+  // in the Trials tab, even if the LLM arbitrarily skipped summarizing some of them.
   const availableTrialSources = [...sourcesById.values()].filter((s) => s.type === "trial");
 
-  if (normalizedTrials.length === 0 && availableTrialSources.length > 0) {
-    for (const trialSource of availableTrialSources.slice(0, 3)) {
+  for (const trialSource of availableTrialSources) {
+    if (!seenTrialSources.has(trialSource.id)) {
       normalizedTrials.push({
         title: trialSource.title,
         summary: trialSource.snippet || `Clinical trial investigating ${trialSource.title}.`,
         sourceId: trialSource.id,
         url: trialSource.url
       });
+      seenTrialSources.add(trialSource.id);
     }
   }
 
@@ -470,7 +472,8 @@ export const generateGroundedAnswer = async ({
         sources: reasoningSources
       });
       const parsedPayload = JSON.parse(extractJsonPayload(modelOutput));
-      const normalizedPayload = normalizeModelPayload(parsedPayload, reasoningSourcesById);
+      const allSourcesById = new Map(sources.map((source) => [source.id, source]));
+      const normalizedPayload = normalizeModelPayload(parsedPayload, allSourcesById);
       logInfo("reasoning", "received hugging face response", {
         reasoningSourceIds: reasoningSources.map((item) => item.id),
         normalizedPayload: summarizePayloadForDebug(normalizedPayload)
